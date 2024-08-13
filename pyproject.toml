@@ -25,7 +25,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-	"schwab-py"
+	"schwab-py",
+	"pandas",
 ]
 
 [project.urls]
