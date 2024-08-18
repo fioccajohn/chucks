@@ -1,67 +1,53 @@
-# coding: utf-8
-from datetime import datetime, timedelta
-import json
-from pathlib import Path
+import logging
 import pandas as pd
-from schwab.auth import easy_client
 
-# TODO: Could this work as a massive wrapper around the schwab-py package?
-
-def token_creation_date(schwab_client):
-    """Get token creation date."""
-    # TODO is this access or refresh? presumably refresh token creation.
-    return datetime.ctime(datetime.now() - timedelta(seconds=schwab_client.token_age()))
+logger = logging.getLogger(__name__)
 
 @pd.api.extensions.register_dataframe_accessor("chucks")
 class ChucksAccessor:
+    """Extension to provide more finance dataframe methods."""
+
     def __init__(self, pandas_obj):
         self._validate(pandas_obj)
         self._obj = pandas_obj
-        # self.some_other_namespace = NamespaceClassForLikePriceHistory
-        # self.another_namespace = NamespaceClassForLikeQuote
 
     @staticmethod
     def _validate(response_obj):
-        # TODO: what's the input here?
-        # TODO
         pass
 
     @staticmethod
-    def from_price_history(response_obj):
-        # TODO
-        return pd.json_normalize(response_obj.json(), record_path="candles", meta=['symbol', 'empty'])
+    def from_candles(price_history_responses):
+        """Returns a dataframe of the candles responses.
+
+        Can take multiple responses and output one df.
+
+        Args:
+            price_history_responses (iterable): An iterable of price history responses.
+
+        """
+        df =  pd.concat(pd.json_normalize(c.json(), record_path="candles", meta=['symbol', 'empty']) for c in price_history_responses)
+
+        return df
 
     @staticmethod
-    def from_XXX(response_obj):
-        # TODO
-        pass
+    def from_accounts(accounts_response):
+        df =  pd.json_normalize(accounts_response.json(), sep='_')
+        return df
 
-    @property
-    def some_property(self):
-        # TODO
+    @staticmethod
+    def from_instruments(instruments_response):
+        df =  pd.json_normalize(instruments_response.json(), record_path="instruments")
+        return df
+
+    @staticmethod
+    def static_method(response_obj):
         pass
 
     def some_method(self):
-        # TODO
         pass
 
-    def plot(self):
-        # TODO
+    def convenience_method_like_send_all_instruments_to_price_history(self):
         pass
 
-
-if __name__ == "__main__":
-
-    CONFIG_FILE = Path("/Users/johnfiocca/.config/chucks/config.json")
-
-    with open(CONFIG_FILE) as f:
-        j = json.load(f)
-
-    c = easy_client(
-        j.get("client_id"),
-        j.get("client_secret"),
-        j.get("redirect_uri"),
-        Path("/Users/johnfiocca/.config/chucks/access_token.json"),
-    )
-    r = c.get_price_history("SPY")
-    df = pd.DataFrame.chucks.from_price_history(r)
+    def what_about_adding_field_like_response_type_to_df(self):
+        pass
