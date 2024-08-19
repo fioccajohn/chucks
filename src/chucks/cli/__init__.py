@@ -1,5 +1,4 @@
 import click
-
 from bindle.__about__ import __version__
 
 

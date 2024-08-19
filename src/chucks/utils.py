@@ -1,10 +1,12 @@
-import logging
 import json
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
 from schwab.auth import easy_client
 
 logger = logging.getLogger(__name__)
+
 
 def get_schwab_client(config_file="~/.config/chucks/config.json"):
     """Easier easy client."""
@@ -14,15 +16,14 @@ def get_schwab_client(config_file="~/.config/chucks/config.json"):
     with open(config_file_path) as f:
         config = json.load(f)
 
-    client = easy_client(
+    return easy_client(
         config.get("client_id"),
         config.get("client_secret"),
         config.get("redirect_uri"),
-        Path.home().joinpath('.config/chucks/access_token.json'),
+        Path.home().joinpath(".config/chucks/access_token.json"),
     )
 
-    return client
 
 def token_creation_date(schwab_client):
     """Get token creation date."""
-    return datetime.ctime(datetime.now() - timedelta(seconds=schwab_client.token_age()))
+    return datetime.ctime(datetime.now(tz=timezone.UTC) - timedelta(seconds=schwab_client.token_age()))
