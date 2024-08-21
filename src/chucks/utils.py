@@ -26,4 +26,6 @@ def get_schwab_client(config_file="~/.config/chucks/config.json"):
 
 def token_creation_date(schwab_client):
     """Get token creation date."""
-    return datetime.ctime(datetime.now(tz=timezone.UTC) - timedelta(seconds=schwab_client.token_age()))
+    return datetime.ctime(
+        datetime.now(tz=timezone.UTC) - timedelta(seconds=schwab_client.token_age())
+    )

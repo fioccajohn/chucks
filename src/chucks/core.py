@@ -1,5 +1,6 @@
 import logging
 from functools import wraps
+from schwab.auth import Client
 
 import pandas as pd
 
@@ -9,22 +10,39 @@ logger = logging.getLogger(__name__)
 def _client_required(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        if self._client is None:
+        if not hasattr(self, "_client"):
             error_message = "API client is not set. Use `set_client` to initialize it before using this method."
             raise ValueError(error_message)
         return func(self, *args, **kwargs)
 
     return wrapper
 
+
+def _non_array_response_to_array(response):
+    data = response.json()
+    return [data.get(k) for k in data]
+
+def _convert_time_columns_to_datetime(df: pd.DataFrame) -> pd.DataFrame:
+    # TODO fix for "realtime" field which may be a boolean indicator
+    return df.astype({k: "datetime64[ms]" for k in df.columns[df.columns.str.contains('time', case=False)]})
+
+# Example usage:
+# df = df.pipe(convert_time_columns)
+
 @pd.api.extensions.register_dataframe_accessor("chucks")
 class ChucksAccessor:
     """Extension to provide more finance dataframe methods."""
 
-    _client = None
-
     @classmethod
     def set_client(cls, client):
+
+        if not isinstance(client, Client):
+            error_message = f"Passed value {client} (type: {type(client)}) is not an instance of {Client}"
+            raise ValueError(error_message)
+
         cls._client = client
+
+        return None
 
     def __init__(self, pandas_obj):
         self._validate(pandas_obj)
@@ -43,7 +61,7 @@ class ChucksAccessor:
         return df.set_index(["datetime", "symbol"])
 
     @staticmethod
-    def from_candles(price_history_responses):
+    def read_candles(price_history_responses):
         """Returns a dataframe of the candles responses.
 
         Can take multiple responses and output one df.
@@ -54,7 +72,9 @@ class ChucksAccessor:
         """
         return (
             pd.concat(
-                pd.json_normalize(c.json(), record_path="candles", meta=["symbol", "empty"])
+                pd.json_normalize(
+                    c.json(), record_path="candles", meta=["symbol", "empty"]
+                )
                 for c in price_history_responses
             )
             .pipe(ChucksAccessor._convert_datetime_to_ms)
@@ -62,31 +82,58 @@ class ChucksAccessor:
         )
 
     @staticmethod
-    def from_accounts(accounts_response):
-        return pd.json_normalize(accounts_response.json(), sep="_")
+    def read_accounts(accounts_response):
+        return (
+            pd.json_normalize(accounts_response.json(), sep="_")
+            .set_index("securitiesAccount_accountNumber", drop=False)
+            .rename_axis(index="accountNumber")
+        )
 
     @staticmethod
-    def from_instruments(instruments_response):
-        return pd.json_normalize(instruments_response.json(), record_path="instruments").set_index('symbol')
+    def read_movers(movers_response):
+        return pd.json_normalize(
+            movers_response.json(), record_path="screeners"
+        ).set_index("symbol", drop=False)
 
     @staticmethod
-    def static_method(response_obj):
-        pass
+    def read_instruments(instruments_response):
+        return pd.json_normalize(
+            instruments_response.json(), record_path="instruments", sep="_"
+        ).set_index("symbol", drop=False)
+
+    @staticmethod
+    def read_quotes(instruments_response):
+        return pd.json_normalize(
+            instruments_response.json(), record_path="instruments", sep="_"
+        ).set_index("symbol", drop=False)
 
     @_client_required
-    def get_quotes_for_symbols(self):
+    def get_quotes(self):
         symbols = self._get_unique_symbols_from_index()
         response = self._client.get_quotes(symbols)
-        response_dict = response.json()
+        data_array = _non_array_response_to_array(response)
 
-        # TODO: How to return certain "fields"? filter after creating all? only request subset if set using the client values? Column multiindex?
-        return pd.concat([pd.DataFrame.from_dict(response_dict.get(k) for k in response_dict)]).set_index('symbol')
-        # .filter(regex='fundamental')
+        return pd.json_normalize(data_array, sep="_").set_index("symbol", drop=False)
 
+    @_client_required
+    def get_fundamentals(self):
+        symbols = self._get_unique_symbols_from_index()
+        response = self._client.get_instruments(
+            symbols, self._client.Instrument.Projection.FUNDAMENTAL
+        )
+
+        return self.read_instruments(response)
+
+    @_client_required
+    def get_price_history(self):
+        """Get price history.
+
+        At level of granularity specified by mapping to the method in schwab api?
+        """
+        pass
 
     def _get_unique_symbols_from_index(self):
-        return self._obj.index.get_level_values('symbol').unique()
-
+        return self._obj.index.get_level_values("symbol").unique()
 
     def some_method(self):
         pass
