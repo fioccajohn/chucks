@@ -124,22 +124,92 @@ class ChucksAccessor:
 
         return self.read_instruments(response)
 
-    @_client_required
-    def get_price_history(self):
-        """Get price history.
 
-        At level of granularity specified by mapping to the method in schwab api?
+    @_client_required
+    def get_price_history(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
         """
-        pass
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_day(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_day(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_fifteen_minutes(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_fifteen_minutes(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_five_minutes(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_five_minutes(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_minute(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_minute(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_ten_minutes(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_ten_minutes(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_thirty_minutes(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_thirty_minutes(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
+
+    @_client_required
+    def get_price_history_every_week(self, *args, **kwargs):
+        """Get price history.
+        
+        Additional args and kwargs are passed to the schwab client method.
+        """
+        symbols = self._get_unique_symbols_from_index()
+        responses = (self._client.get_price_history_every_week(s, *args, **kwargs) for s in symbols)
+        return self.read_candles(responses)
 
     def _get_unique_symbols_from_index(self):
         return self._obj.index.get_level_values("symbol").unique()
 
-    def some_method(self):
-        pass
-
-    def convenience_method_like_send_all_instruments_to_price_history(self):
-        pass
-
     def what_about_adding_field_like_response_type_to_df(self):
+        pass
+
+    def generate_price_history_features(self):
         pass
