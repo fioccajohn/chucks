@@ -44,9 +44,6 @@ extra-dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/chucks tests}"
 
-[tool.hatch.metadata.hooks]
-source-dir = "src"
-
 [tool.coverage.run]
 source_pkgs = ["chucks", "tests"]
 branch = true
