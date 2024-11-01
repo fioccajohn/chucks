@@ -102,9 +102,9 @@ class ChucksAccessor:
         ).set_index("symbol", drop=False)
 
     @staticmethod
-    def read_quotes(instruments_response):
+    def read_quotes(quotes_response):
         return pd.json_normalize(
-            instruments_response.json(), record_path="instruments", sep="_"
+            _non_array_response_to_array(quotes_response), sep="_"
         ).set_index("symbol", drop=False)
 
     @_client_required
