@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_schwab_client(config_file="~/.config/chucks/config.json"):
-    """Easier easy client."""
+    """Easier easy client.
+    
+    This function assumes the user has set up a home .config directory properly.
+    """
 
     config_file_path = Path(config_file).expanduser()
 
