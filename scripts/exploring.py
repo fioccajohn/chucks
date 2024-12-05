@@ -1,3 +1,5 @@
+"""Simple usage example."""
+
 import pandas as pd
 import chucks
 from chucks.utils import get_schwab_client
