@@ -58,6 +58,12 @@ class ChucksAccessor:
 
     @staticmethod
     def _set_index_datetime_symbol(df: pd.DataFrame) -> pd.DataFrame:
+        """Sets multiindex with datetime and symbol as the levels.
+
+        Note:
+            Removing use of this method from use.
+            Too many unneeded complexitiies and blockers to justify.
+        """
         return df.set_index(["datetime", "symbol"])
 
     @staticmethod
@@ -78,11 +84,12 @@ class ChucksAccessor:
                 for c in price_history_responses
             )
             .pipe(ChucksAccessor._convert_datetime_to_ms)
-            .pipe(ChucksAccessor._set_index_datetime_symbol)
+            .set_index("datetime")
         )
 
     @staticmethod
     def read_accounts(accounts_response):
+        """Read in account data from the API response as a DataFrame."""
         return (
             pd.json_normalize(accounts_response.json(), sep="_")
             .set_index("securitiesAccount_accountNumber", drop=False)
@@ -91,24 +98,28 @@ class ChucksAccessor:
 
     @staticmethod
     def read_movers(movers_response):
+        """Read in movers data from the API response as a DataFrame."""
         return pd.json_normalize(
             movers_response.json(), record_path="screeners"
         ).set_index("symbol", drop=False)
 
     @staticmethod
     def read_instruments(instruments_response):
+        """Read in instruments data from the API response as a DataFrame."""
         return pd.json_normalize(
             instruments_response.json(), record_path="instruments", sep="_"
         ).set_index("symbol", drop=False)
 
     @staticmethod
     def read_quotes(quotes_response):
+        """Read in quotes data from the API response as a DataFrame."""
         return pd.json_normalize(
             _non_array_response_to_array(quotes_response), sep="_"
         ).set_index("symbol", drop=False)
 
     @_client_required
     def get_quotes(self):
+        """Get quotes for the unique symbols in the current dataframe."""
         symbols = self._get_unique_symbols_from_index()
         response = self._client.get_quotes(symbols)
         data_array = _non_array_response_to_array(response)
@@ -117,6 +128,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_fundamentals(self):
+        """Get fundamental info for the unique symbols in the current dataframe."""
         symbols = self._get_unique_symbols_from_index()
         response = self._client.get_instruments(
             symbols, self._client.Instrument.Projection.FUNDAMENTAL
@@ -127,7 +139,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -137,7 +149,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_day(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -147,7 +159,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_fifteen_minutes(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -157,7 +169,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_five_minutes(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -167,7 +179,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_minute(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -177,7 +189,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_ten_minutes(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -187,7 +199,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_thirty_minutes(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -197,7 +209,7 @@ class ChucksAccessor:
 
     @_client_required
     def get_price_history_every_week(self, *args, **kwargs):
-        """Get price history.
+        """Get price history for the unique symbols in the dataframe.
         
         Additional args and kwargs are passed to the schwab client method.
         """
@@ -206,10 +218,9 @@ class ChucksAccessor:
         return self.read_candles(responses)
 
     def _get_unique_symbols_from_index(self):
+        """Get unique ticker symbols from the dataframe."""
         return self._obj.index.get_level_values("symbol").unique()
 
-    def what_about_adding_field_like_response_type_to_df(self):
-        pass
-
     def generate_price_history_features(self):
+        """Helper function to generate a common set of features used in a price history dataframe."""
         pass

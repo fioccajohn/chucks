@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024-present John Fiocca <fioccajohn@gmail.com>
-from src.chucks.core import *
+from chucks.core import *
+import chucks.utils
 
 # __all__ = [
 #     "ChucksAccessor",
