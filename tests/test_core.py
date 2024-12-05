@@ -3,7 +3,6 @@ import pytest
 
 import chucks
 
-
 class TestChucksAccessor:
 
     @classmethod
