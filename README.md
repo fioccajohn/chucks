@@ -16,12 +16,6 @@
 pip install chucks
 ```
 
-## TODO
-- [ ] Pandas wrappers.
-- [ ] Analysis scripts.
-- [ ] Pandas extensions.
-- [ ] Explore the suggestion of using another Schwab python library for orders.
-
 ## License
 
 This project does not include a license. All rights reserved.
